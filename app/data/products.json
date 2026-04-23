@@ -1,0 +1,25 @@
+[
+  {
+    "_docId": "seed-aero-16",
+    "id": "1237",
+    "name": "Gigabyte Aero 16",
+    "price": 899,
+    "warranty": "1 Yil",
+    "cpu": "Core i7-12700H 14 Yader (2.3\u20134.9GHz)",
+    "ram": "24GB DDR5 4800MHz",
+    "gpu": "RTX 3070Ti 8GB",
+    "ssd": "1TB M.2 NVMe PCIe4",
+    "screen": "16.0\" 4K OLED",
+    "os": "Windows 11 Pro",
+    "features": [
+      "RGB Klaviatura",
+      "Metal Korpus",
+      "Face ID",
+      "Harman Kardon 4x"
+    ],
+    "note": "https://t.me/noutbuk_kompyuter/880?single",
+    "desc": "Professional va gaming uchun kuchli model. Holati yaxshi, kafolat mavjud.",
+    "images": [],
+    "createdAt": "2026-04-23T04:50:42.242985+00:00"
+  }
+]
