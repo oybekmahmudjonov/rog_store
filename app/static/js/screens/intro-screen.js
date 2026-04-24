@@ -3,7 +3,7 @@ export function initIntroScreen() {
   const app = document.getElementById("app");
   const skipButton = document.getElementById("skipIntroBtn");
   const introVideo = document.getElementById("introVideo");
-  const defaultIntroVideo = "/static/media/intro.webm";
+  const defaultIntroVideo = "/static/media/intro.mp4";
   let hasLaunched = false;
 
   function launchApp() {
