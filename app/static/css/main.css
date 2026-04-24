@@ -25,6 +25,10 @@ body {
   overflow-x: hidden;
 }
 
+body.is-telegram-miniapp {
+  min-height: var(--tg-viewport-stable-height, 100vh);
+}
+
 button,
 input,
 select,

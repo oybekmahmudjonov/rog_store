@@ -8,12 +8,40 @@ import { installGlobalClientLogging, logClientError } from "./services/logger.js
 import { state } from "./store/state.js";
 import { api } from "./services/api.js";
 
+function initTelegramMiniApp() {
+  const webApp = window.Telegram?.WebApp;
+  if (!webApp) {
+    return;
+  }
+
+  document.body.classList.add("is-telegram-miniapp");
+
+  try {
+    webApp.ready();
+    webApp.expand();
+
+    if (typeof webApp.requestFullscreen === "function") {
+      webApp.requestFullscreen();
+    }
+
+    if (typeof webApp.disableVerticalSwipes === "function") {
+      webApp.disableVerticalSwipes();
+    }
+  } catch (error) {
+    logClientError("Failed to initialize Telegram Mini App", {
+      message: error.message,
+      stack: error.stack || null,
+    });
+  }
+}
+
 const root = document.getElementById("appShell");
 root.innerHTML = renderAppShell();
 
 const toast = new Toast(document.getElementById("toast"));
 state.setToast(toast);
 installGlobalClientLogging();
+initTelegramMiniApp();
 
 initIntroScreen();
 initDetailScreen();
