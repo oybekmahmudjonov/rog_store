@@ -25,6 +25,7 @@ export function renderCard(product, index = 0) {
         <div class="card-media-overlay"></div>
       </div>
       <div class="cbadge">#${product.id || "-"}</div>
+      ${product.isFavorite ? `<div class="cfavorite">Featured</div>` : ""}
       <div class="cbody">
         <div class="cid">ID: ${product.id || "-"}</div>
         <div class="ctitle">${product.name}</div>

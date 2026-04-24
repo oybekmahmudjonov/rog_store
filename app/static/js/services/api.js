@@ -36,6 +36,16 @@ export const api = {
     });
   },
 
+  setFavorite(productId, isFavorite) {
+    return request(`/api/products/${productId}/favorite`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isFavorite }),
+    });
+  },
+
   deleteProduct(productId) {
     return request(`/api/products/${productId}`, {
       method: "DELETE",

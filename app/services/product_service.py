@@ -18,7 +18,13 @@ class ProductService:
         self.signed_url_expiry = int(os.getenv("SUPABASE_SIGNED_URL_EXPIRY", "604800"))
 
     def list_products(self) -> list[dict]:
-        response = self.client.table(self.table_name).select("*").order("created_at", desc=True).execute()
+        response = (
+            self.client.table(self.table_name)
+            .select("*")
+            .order("is_favorite", desc=True)
+            .order("created_at", desc=True)
+            .execute()
+        )
         return [self._serialize_row(row) for row in response.data or []]
 
     def create_product(self, form_data: dict, uploaded_files: Iterable[FileStorage]) -> dict:
@@ -32,13 +38,14 @@ class ProductService:
         if not existing:
             return None
 
-        row = self._build_row(form_data, uploaded_files, existing=existing)
-        response = (
-            self.client.table(self.table_name)
-            .update(row)
-            .eq("id", product_id)
-            .execute()
+        removed_image_paths = self._split_csv(form_data.get("removedImagePaths", "").strip())
+        row = self._build_row(
+            form_data,
+            uploaded_files,
+            existing=existing,
+            removed_image_paths=removed_image_paths,
         )
+        response = self.client.table(self.table_name).update(row).eq("id", product_id).execute()
         updated_row = (response.data or [None])[0]
         return self._serialize_row(updated_row) if updated_row else None
 
@@ -53,6 +60,16 @@ class ProductService:
         self.client.table(self.table_name).delete().eq("id", product_id).execute()
         return True
 
+    def set_favorite(self, product_id: str, is_favorite: bool) -> dict | None:
+        response = (
+            self.client.table(self.table_name)
+            .update({"is_favorite": is_favorite})
+            .eq("id", product_id)
+            .execute()
+        )
+        updated_row = (response.data or [None])[0]
+        return self._serialize_row(updated_row) if updated_row else None
+
     def _get_raw_row(self, product_id: str) -> dict | None:
         response = self.client.table(self.table_name).select("*").eq("id", product_id).limit(1).execute()
         return (response.data or [None])[0]
@@ -62,6 +79,7 @@ class ProductService:
         form_data: dict,
         uploaded_files: Iterable[FileStorage],
         existing: dict | None = None,
+        removed_image_paths: list[str] | None = None,
     ) -> dict:
         name = form_data.get("name", "").strip()
         price_raw = form_data.get("price", "").strip()
@@ -77,8 +95,16 @@ class ProductService:
         post_number = self._parse_int(form_data.get("productId", "").strip())
         warranty_months = self._warranty_to_months(form_data.get("warranty", "").strip())
         image_urls, image_paths = self._save_images(existing["id"] if existing else None, uploaded_files)
-        existing_images = list(existing.get("images") or []) if existing else []
-        existing_image_paths = list(existing.get("image_paths") or []) if existing else []
+
+        removed_paths = set(removed_image_paths or [])
+        existing_all_paths = list(existing.get("image_paths") or []) if existing else []
+        existing_image_paths = [path for path in existing_all_paths if path not in removed_paths]
+
+        for path in removed_paths:
+            if path in existing_all_paths:
+                self.s3.delete_object(Bucket=self.bucket_name, Key=path)
+
+        existing_images = [self._public_url(path) for path in existing_image_paths]
 
         return {
             "post_number": post_number,
@@ -99,6 +125,10 @@ class ProductService:
             "currency": "USD",
             "images": existing_images + image_urls,
             "image_paths": existing_image_paths + image_paths,
+            "is_favorite": self._parse_bool(
+                form_data.get("isFavorite"),
+                default=bool(existing.get("is_favorite")) if existing else False,
+            ),
         }
 
     def _save_images(self, product_id: str | None, uploaded_files: Iterable[FileStorage]) -> tuple[list[str], list[str]]:
@@ -126,10 +156,7 @@ class ProductService:
     def _public_url(self, object_path: str) -> str:
         return self.s3.generate_presigned_url(
             "get_object",
-            Params={
-                "Bucket": self.bucket_name,
-                "Key": object_path,
-            },
+            Params={"Bucket": self.bucket_name, "Key": object_path},
             ExpiresIn=self.signed_url_expiry,
         )
 
@@ -165,11 +192,13 @@ class ProductService:
             "note": links.get("note"),
             "desc": row.get("condition"),
             "images": images,
+            "imageItems": [{"path": path, "url": self._public_url(path)} for path in image_paths],
             "createdAt": row.get("created_at"),
             "brand": row.get("brand"),
             "model": row.get("model"),
             "warrantyMonths": warranty_months,
             "links": links,
+            "isFavorite": bool(row.get("is_favorite")),
         }
 
     def _split_name(self, name: str) -> tuple[str, str]:
@@ -188,6 +217,11 @@ class ProductService:
             return int(value)
         except ValueError:
             return None
+
+    def _parse_bool(self, value: str | None, default: bool = False) -> bool:
+        if value is None:
+            return default
+        return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
     def _warranty_to_months(self, value: str) -> int | None:
         if not value or value.lower() == "kafolatsiz":

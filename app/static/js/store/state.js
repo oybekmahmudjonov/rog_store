@@ -17,7 +17,16 @@ class AppState {
   }
 
   setProducts(products) {
-    this.products = products;
+    this.products = [...products].sort((left, right) => {
+      const favoriteDelta = Number(Boolean(right.isFavorite)) - Number(Boolean(left.isFavorite));
+      if (favoriteDelta !== 0) {
+        return favoriteDelta;
+      }
+
+      const leftTime = left.createdAt ? Date.parse(left.createdAt) : 0;
+      const rightTime = right.createdAt ? Date.parse(right.createdAt) : 0;
+      return rightTime - leftTime;
+    });
     this.notify();
   }
 

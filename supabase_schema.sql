@@ -18,11 +18,15 @@ create table if not exists public.laptops (
   os text,
   price numeric(10,2) not null,
   currency text not null default 'USD',
+  is_favorite boolean not null default false,
   images jsonb not null default '[]'::jsonb,
   image_paths jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.laptops
+  add column if not exists is_favorite boolean not null default false;
 
 create or replace function set_updated_at()
 returns trigger as $$
@@ -48,6 +52,7 @@ create index if not exists idx_laptops_display on public.laptops using gin(displ
 create index if not exists idx_laptops_gpus on public.laptops using gin(gpus);
 create index if not exists idx_laptops_features on public.laptops using gin(features);
 create index if not exists idx_laptops_links on public.laptops using gin(links);
+create index if not exists idx_laptops_favorite_created on public.laptops(is_favorite, created_at desc);
 
 insert into public.laptops (
   post_number,

@@ -1346,6 +1346,20 @@ footer {
   margin-top: 8px;
 }
 
+.existing-images {
+  margin-bottom: 10px;
+}
+
+.existing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.existing-item {
+  border: 1px solid rgba(255, 0, 32, 0.18);
+}
+
 .pitem {
   position: relative;
   aspect-ratio: 1;
@@ -1473,6 +1487,10 @@ footer {
   .frow {
     grid-template-columns: 1fr;
   }
+
+  .existing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .modal {
@@ -1585,7 +1603,7 @@ footer {
 
 .mitem {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  grid-template-columns: 52px minmax(0, 1fr) auto auto auto;
 }
 
 @media (min-width: 820px) {
@@ -1728,6 +1746,52 @@ footer {
   left: 12px;
   font-size: 10px;
   padding: 4px 9px;
+}
+
+.cfavorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 5px 10px;
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  background: linear-gradient(135deg, rgba(255, 184, 0, 0.2), rgba(255, 126, 0, 0.16));
+  color: #ffe28f;
+  font-family: "Share Tech Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(255, 184, 0, 0.12);
+}
+
+.favorite-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--rog-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--rog-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.favorite-field input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--rog-red);
+}
+
+.favorite-btn {
+  font-size: 16px;
+  color: #b89b42;
+}
+
+.favorite-btn.on {
+  border-color: rgba(255, 184, 0, 0.45);
+  background: rgba(255, 184, 0, 0.12);
+  color: #ffd568;
+  box-shadow: 0 0 16px rgba(255, 184, 0, 0.16);
 }
 
 .cid {

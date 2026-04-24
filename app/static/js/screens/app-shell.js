@@ -142,9 +142,17 @@ export function renderAppShell() {
                 <div class="fg"><label class="fl">Xususiyatlar (vergul bilan)</label><input class="fi" type="text" name="features" placeholder="RGB Klaviatura, Metal Korpus, Face ID"></div>
                 <div class="fg"><label class="fl">Eslatma havolasi</label><input class="fi" type="text" name="note" placeholder="https://t.me/..."></div>
                 <div class="fg"><label class="fl">Tavsif</label><textarea class="fta" name="desc" placeholder="Qo'shimcha ma'lumot..."></textarea></div>
+                <div class="fg">
+                  <label class="fl">Dashboard</label>
+                  <label class="favorite-field">
+                    <input type="checkbox" name="isFavorite">
+                    <span>Tanlangan mahsulot sifatida tepada ko'rsatish</span>
+                  </label>
+                </div>
 
                 <div class="fg">
                   <label class="fl">Rasmlar</label>
+                  <div class="existing-images" id="existingImages"></div>
                   <div class="uarea">
                     <input type="file" id="fImgs" name="images" multiple accept="image/*">
                     <div class="uicon">Upload</div>

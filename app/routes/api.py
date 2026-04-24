@@ -87,6 +87,23 @@ def delete_product(product_id: str):
     return jsonify({"ok": True})
 
 
+@api_bp.patch("/products/<product_id>/favorite")
+def favorite_product(product_id: str):
+    payload = request.get_json(silent=True) or {}
+    is_favorite = bool(payload.get("isFavorite"))
+    try:
+        product = _service().set_favorite(product_id, is_favorite)
+    except SupabaseConfigError as exc:
+        current_app.logger.exception("Supabase config error while updating favorite for product %s", product_id)
+        return jsonify({"message": str(exc)}), 400
+    except Exception as exc:
+        current_app.logger.exception("Unexpected error while updating favorite for product %s", product_id)
+        return jsonify({"message": str(exc)}), 400
+    if not product:
+        return jsonify({"message": "Product not found"}), 404
+    return jsonify(product)
+
+
 @api_bp.post("/telegram/webhook")
 def save_webhook():
     return jsonify(
