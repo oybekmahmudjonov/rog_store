@@ -1,4 +1,8 @@
 import os
+import json
+from urllib import error as urllib_error
+from urllib import parse as urllib_parse
+from urllib import request as urllib_request
 
 from flask import Blueprint, current_app, jsonify, request
 
@@ -21,6 +25,23 @@ def _telegram_config() -> dict:
         "hasChannelId": bool(channel_id),
         "webhookUrl": webhook_url or "https://your-server.com/webhook",
     }
+
+
+def _telegram_api_call(method: str, payload: dict) -> dict:
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    if not bot_token:
+        raise ValueError("TELEGRAM_BOT_TOKEN is missing in .env")
+
+    encoded = urllib_parse.urlencode(payload).encode("utf-8")
+    req = urllib_request.Request(
+        f"https://api.telegram.org/bot{bot_token}/{method}",
+        data=encoded,
+        method="POST",
+    )
+    req.add_header("Content-Type", "application/x-www-form-urlencoded")
+
+    with urllib_request.urlopen(req, timeout=15) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 
 @api_bp.get("/config")
@@ -104,15 +125,43 @@ def favorite_product(product_id: str):
     return jsonify(product)
 
 
-@api_bp.post("/telegram/webhook")
+@api_bp.post("/telegram/connect-webhook")
 def save_webhook():
+    webhook_url = _telegram_config()["webhookUrl"]
+    if not webhook_url:
+        return jsonify({"message": "TELEGRAM_WEBHOOK_URL is missing in .env"}), 400
+
+    try:
+        telegram_response = _telegram_api_call("setWebhook", {"url": webhook_url})
+    except ValueError as exc:
+        return jsonify({"message": str(exc)}), 400
+    except urllib_error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        current_app.logger.exception("Telegram setWebhook HTTP error")
+        return jsonify({"message": body or f"Telegram HTTP error {exc.code}"}), 400
+    except Exception as exc:
+        current_app.logger.exception("Unexpected error while connecting Telegram webhook")
+        return jsonify({"message": str(exc)}), 400
+
+    if not telegram_response.get("ok"):
+        return jsonify({"message": telegram_response.get("description", "Telegram webhook connection failed")}), 400
+
+    current_app.logger.info("Telegram webhook connected to %s", webhook_url)
     return jsonify(
         {
             "ok": True,
-            "message": "Webhook konfiguratsiyasi .env orqali boshqariladi.",
-            "url": _telegram_config()["webhookUrl"],
+            "message": "Webhook connected",
+            "url": webhook_url,
+            "telegram": telegram_response,
         }
     )
+
+
+@api_bp.post("/telegram/webhook")
+def telegram_webhook():
+    payload = request.get_json(silent=True) or {}
+    current_app.logger.info("Telegram webhook update received: %s", payload)
+    return jsonify({"ok": True})
 
 
 @api_bp.post("/client-log")

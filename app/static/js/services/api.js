@@ -53,7 +53,7 @@ export const api = {
   },
 
   saveWebhook() {
-    return request("/api/telegram/webhook", {
+    return request("/api/telegram/connect-webhook", {
       method: "POST",
     });
   },
