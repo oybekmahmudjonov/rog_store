@@ -2,7 +2,7 @@ export function renderAppShell() {
   return `
     <div id="intro">
       <div class="ib"></div>
-      <video id="introVideo" autoplay muted playsinline loop></video>
+      <video id="introVideo" autoplay playsinline preload="auto"></video>
       <div class="scan"></div>
       <div class="icorner"><span></span><span></span><span></span><span></span></div>
       <button class="iskip" id="skipIntroBtn">SKIP</button>
