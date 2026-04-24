@@ -16,6 +16,16 @@ function initTelegramMiniApp() {
 
   document.body.classList.add("is-telegram-miniapp");
 
+  const applyInsets = () => {
+    const topInset =
+      webApp.safeAreaInset?.top ??
+      webApp.contentSafeAreaInset?.top ??
+      0;
+    document.documentElement.style.setProperty("--telegram-top-offset", `${topInset}px`);
+  };
+
+  applyInsets();
+
   try {
     webApp.ready();
     webApp.expand();
@@ -26,6 +36,11 @@ function initTelegramMiniApp() {
 
     if (typeof webApp.disableVerticalSwipes === "function") {
       webApp.disableVerticalSwipes();
+    }
+
+    if (typeof webApp.onEvent === "function") {
+      webApp.onEvent("safeAreaChanged", applyInsets);
+      webApp.onEvent("contentSafeAreaChanged", applyInsets);
     }
   } catch (error) {
     logClientError("Failed to initialize Telegram Mini App", {

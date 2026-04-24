@@ -8,6 +8,7 @@
   --rog-border: rgba(255, 0, 32, 0.22);
   --rog-text: #e8e8f0;
   --rog-muted: #7a7a90;
+  --telegram-top-offset: 0px;
 }
 
 * {
@@ -27,6 +28,10 @@ body {
 
 body.is-telegram-miniapp {
   min-height: var(--tg-viewport-stable-height, 100vh);
+}
+
+body.is-telegram-miniapp #app {
+  padding-top: max(var(--telegram-top-offset), 12px);
 }
 
 button,
@@ -372,7 +377,7 @@ textarea {
 
 nav {
   position: sticky;
-  top: 0;
+  top: var(--telegram-top-offset);
   z-index: 100;
   background: rgba(5, 5, 7, 0.96);
   backdrop-filter: blur(20px);
@@ -382,6 +387,21 @@ nav {
   align-items: center;
   justify-content: space-between;
   height: 56px;
+}
+
+@media (max-width: 700px) {
+  body.is-telegram-miniapp #app {
+    padding-top: max(var(--telegram-top-offset), 20px);
+  }
+
+  body.is-telegram-miniapp nav {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  body.is-telegram-miniapp .nbtn.red {
+    min-width: 88px;
+  }
 }
 
 .nbrand,
