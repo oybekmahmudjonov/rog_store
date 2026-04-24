@@ -66,6 +66,21 @@ def _send_telegram_message(chat_id: int | str, text: str, reply_markup: dict | N
     return _telegram_api_call("sendMessage", payload)
 
 
+def _telegram_web_app_markup(app_url: str) -> dict:
+    return {
+        "inline_keyboard": [
+            [
+                {
+                    "text": "Open App",
+                    "web_app": {
+                        "url": app_url,
+                    },
+                }
+            ]
+        ]
+    }
+
+
 @api_bp.get("/config")
 def get_config():
     return jsonify({"telegram": _telegram_config()})
@@ -155,6 +170,20 @@ def save_webhook():
 
     try:
         telegram_response = _telegram_api_call("setWebhook", {"url": webhook_url})
+        app_url = _telegram_app_url()
+        menu_button_response = _telegram_api_call(
+            "setChatMenuButton",
+            {
+                "menu_button": json.dumps(
+                    {
+                        "type": "web_app",
+                        "text": "Open App",
+                        "web_app": {"url": app_url},
+                    },
+                    ensure_ascii=False,
+                )
+            },
+        )
     except ValueError as exc:
         return jsonify({"message": str(exc)}), 400
     except urllib_error.HTTPError as exc:
@@ -167,6 +196,8 @@ def save_webhook():
 
     if not telegram_response.get("ok"):
         return jsonify({"message": telegram_response.get("description", "Telegram webhook connection failed")}), 400
+    if not menu_button_response.get("ok"):
+        return jsonify({"message": menu_button_response.get("description", "Telegram menu button setup failed")}), 400
 
     current_app.logger.info("Telegram webhook connected to %s", webhook_url)
     return jsonify(
@@ -175,6 +206,7 @@ def save_webhook():
             "message": "Webhook connected",
             "url": webhook_url,
             "telegram": telegram_response,
+            "menuButton": menu_button_response,
         }
     )
 
@@ -198,16 +230,7 @@ def telegram_webhook():
             "Assalomu alaykum! ROG Store ilovasiga xush kelibsiz.\n"
             "Mahsulotlarni ko'rish uchun quyidagi tugmani bosing."
         )
-        reply_markup = {
-            "inline_keyboard": [
-                [
-                    {
-                        "text": "Open App",
-                        "url": app_url,
-                    }
-                ]
-            ]
-        }
+        reply_markup = _telegram_web_app_markup(app_url)
 
         try:
             if text.startswith("/start"):
