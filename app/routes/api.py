@@ -27,6 +27,18 @@ def _telegram_config() -> dict:
     }
 
 
+def _telegram_app_url() -> str:
+    configured = os.getenv("TELEGRAM_APP_URL", "").strip()
+    if configured:
+        return configured
+
+    webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL", "").strip()
+    suffix = "/api/telegram/webhook"
+    if webhook_url.endswith(suffix):
+        return webhook_url[: -len(suffix)] or webhook_url
+    return webhook_url or "https://your-server.com"
+
+
 def _telegram_api_call(method: str, payload: dict) -> dict:
     bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
     if not bot_token:
@@ -42,6 +54,16 @@ def _telegram_api_call(method: str, payload: dict) -> dict:
 
     with urllib_request.urlopen(req, timeout=15) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def _send_telegram_message(chat_id: int | str, text: str, reply_markup: dict | None = None) -> dict:
+    payload = {
+        "chat_id": str(chat_id),
+        "text": text,
+    }
+    if reply_markup:
+        payload["reply_markup"] = json.dumps(reply_markup, ensure_ascii=False)
+    return _telegram_api_call("sendMessage", payload)
 
 
 @api_bp.get("/config")
@@ -157,10 +179,44 @@ def save_webhook():
     )
 
 
-@api_bp.post("/telegram/webhook")
+@api_bp.route("/telegram/webhook", methods=["GET", "POST"])
 def telegram_webhook():
+    if request.method == "GET":
+        return jsonify({"ok": True, "message": "Telegram webhook endpoint is active"})
+
     payload = request.get_json(silent=True) or {}
     current_app.logger.info("Telegram webhook update received: %s", payload)
+
+    message = payload.get("message") or {}
+    chat = message.get("chat") or {}
+    chat_id = chat.get("id")
+    text = (message.get("text") or "").strip()
+
+    if chat_id and text:
+        app_url = _telegram_app_url()
+        welcome_text = (
+            "Assalomu alaykum! ROG Store ilovasiga xush kelibsiz.\n"
+            "Mahsulotlarni ko'rish uchun quyidagi tugmani bosing."
+        )
+        reply_markup = {
+            "inline_keyboard": [
+                [
+                    {
+                        "text": "Open App",
+                        "url": app_url,
+                    }
+                ]
+            ]
+        }
+
+        try:
+            if text.startswith("/start"):
+                _send_telegram_message(chat_id, welcome_text, reply_markup=reply_markup)
+            elif text.lower() in {"app", "open", "open app", "site", "website"}:
+                _send_telegram_message(chat_id, "Ilovani ochish uchun tugmani bosing.", reply_markup=reply_markup)
+        except Exception:
+            current_app.logger.exception("Failed to reply to Telegram update")
+
     return jsonify({"ok": True})
 
 

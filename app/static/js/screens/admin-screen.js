@@ -15,6 +15,7 @@ let cfg = {
   hasChannelId: false,
   webhookUrl: DEFAULT_WEBHOOK_URL,
 };
+let currentAdminTab = "products";
 
 function sortProducts(products) {
   return [...products].sort((left, right) => {
@@ -31,6 +32,16 @@ function sortProducts(products) {
 
 function toast(message) {
   state.toast?.show(message);
+}
+
+function setAdminTab(tab) {
+  currentAdminTab = tab;
+  document.querySelectorAll("[data-admin-tab]").forEach((button) => {
+    button.classList.toggle("on", button.dataset.adminTab === tab);
+  });
+  document.querySelectorAll("[data-admin-panel]").forEach((panel) => {
+    panel.classList.toggle("admin-panel-active", panel.dataset.adminPanel === tab);
+  });
 }
 
 function syncSelectedFilesInput() {
@@ -147,6 +158,7 @@ function closeAdmin() {
 function showDashboard() {
   document.getElementById("adminLogin").hidden = true;
   document.getElementById("adminDash").hidden = false;
+  setAdminTab("products");
   renderManageList(state.products);
   loadConfigFields();
   refreshConfig();
@@ -161,6 +173,7 @@ function clearForm() {
   document.getElementById("existingImages").innerHTML = "";
   document.getElementById("submitBtn").textContent = ADD_LABEL;
   syncSelectedFilesInput();
+  setAdminTab("form");
 }
 
 function fillForm(product) {
@@ -187,6 +200,7 @@ function fillForm(product) {
   document.getElementById("submitBtn").textContent = UPDATE_LABEL;
   document.getElementById("previewGrid").innerHTML = "";
   renderExistingImages(product);
+  setAdminTab("form");
 }
 
 function bindImagePreview() {
@@ -333,6 +347,13 @@ export function bindAdminScreen() {
   document.getElementById("webhookBtn").addEventListener("click", handleWebhook);
   document.getElementById("resetBtn").addEventListener("click", clearForm);
   document.getElementById("productForm").addEventListener("submit", submitProduct);
+  document.getElementById("adminMobileTabs").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-admin-tab]");
+    if (!button) {
+      return;
+    }
+    setAdminTab(button.dataset.adminTab);
+  });
   document.getElementById("existingImages").addEventListener("click", (event) => {
     const button = event.target.closest("[data-remove-existing]");
     if (!button) {
@@ -370,6 +391,7 @@ export function bindAdminScreen() {
   });
 
   bindImagePreview();
+  setAdminTab(currentAdminTab);
 
   state.subscribe((snapshot) => {
     if (!adminLoggedIn) {

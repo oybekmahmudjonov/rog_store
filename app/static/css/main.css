@@ -1601,6 +1601,34 @@ footer {
   min-width: 0;
 }
 
+.admin-mobile-tabs {
+  display: none;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.admin-tab {
+  flex: 1;
+  border: 1px solid var(--rog-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--rog-muted);
+  padding: 11px 12px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab.on {
+  border-color: var(--rog-red);
+  color: #fff;
+  background: linear-gradient(135deg, rgba(255, 0, 32, 0.18), rgba(255, 0, 32, 0.08));
+  box-shadow: 0 0 16px rgba(255, 0, 32, 0.12);
+}
+
 .mitem {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr) auto auto auto;
@@ -1620,8 +1648,20 @@ footer {
 }
 
 @media (max-width: 900px) {
+  .admin-mobile-tabs {
+    display: flex;
+  }
+
   .dashboard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-col {
+    display: none;
+  }
+
+  .dashboard-col.admin-panel-active {
+    display: block;
   }
 }
 

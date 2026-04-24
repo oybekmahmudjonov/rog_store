@@ -20,7 +20,7 @@ export function renderAppShell() {
       <section class="hero">
         <div class="htag">Premium Gaming Laptops</div>
         <h1>GAMING<br>POWERHOUSE</h1>
-        <p>O\'zbekistan eng yaxshi gaming noutbuk do'koni. 1 yil kafolat va rasmiy narxlar.</p>
+        <p>O'zbekistan eng yaxshi gaming noutbuk do'koni. 1 yil kafolat va rasmiy narxlar.</p>
         <div class="hstats">
           <div class="hstat"><div class="hnum" id="statCount">0</div><div class="hlbl">Laptops</div></div>
           <div class="hstat"><div class="hnum">1YIL</div><div class="hlbl">Kafolat</div></div>
@@ -87,8 +87,14 @@ export function renderAppShell() {
           <div class="fbstatus ok" id="backendStatus">
             <span>●</span> Supabase backend tayyor - Database + Storage orqali ishlaydi
           </div>
+
+          <div class="admin-mobile-tabs" id="adminMobileTabs">
+            <button class="admin-tab on" type="button" data-admin-tab="products">Mahsulotlar</button>
+            <button class="admin-tab" type="button" data-admin-tab="form">Qo'shish / Tahrirlash</button>
+          </div>
+
           <div class="dashboard-grid">
-            <div class="dashboard-col">
+            <div class="dashboard-col" data-admin-panel="products">
               <div class="wbox">
                 <div class="wtitle"><span class="wdot"></span> Telegram Bot Sozlamalari</div>
                 <div class="fg">
@@ -101,7 +107,7 @@ export function renderAppShell() {
                 </div>
                 <div class="fg">
                   <label class="fl">Webhook URL</label>
-                  <div class="wurl" id="wurl">https://your-server.com/webhook</div>
+                  <div class="wurl" id="wurl">https://your-server.com/api/telegram/webhook</div>
                 </div>
                 <button class="btn-sub mini-btn" id="webhookBtn">WEBHOOK ULASH</button>
               </div>
@@ -110,7 +116,7 @@ export function renderAppShell() {
               <div id="manageList"></div>
             </div>
 
-            <div class="dashboard-col">
+            <div class="dashboard-col" data-admin-panel="form">
               <div class="slbl">Yangi mahsulot</div>
               <form id="productForm">
                 <div class="fg"><label class="fl">Mahsulot ID #</label><input class="fi" type="text" name="productId" placeholder="1238"></div>
@@ -161,7 +167,7 @@ export function renderAppShell() {
                   <div class="pgrid" id="previewGrid"></div>
                 </div>
 
-                <button class="btn-sub" id="submitBtn" type="submit">✅ MAHSULOTNI QO'SHISH</button>
+                <button class="btn-sub" id="submitBtn" type="submit">MAHSULOTNI QO'SHISH</button>
                 <button class="btn-ghost" id="resetBtn" type="button">Tozalash</button>
               </form>
             </div>
